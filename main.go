@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"go-luacompiler/binchunk"
+	"go-luacompiler/vm"
 	"os"
 )
 
@@ -13,12 +14,18 @@ func main() {
 		panic(err)
 	}
 	f := binchunk.Undump(data)
-	PrintList(f)
+	PrintPrototype(f)
 }
 
-func PrintList(f *binchunk.Prototype) {
+func PrintPrototype(f *binchunk.Prototype) {
+	PrintHead(f)
+	PrintCode(f)
+	PrintDetail(f)
+	PrintPrototypes(f)
+}
 
-	// printHead
+// PrintHead 打印函数头
+func PrintHead(f *binchunk.Prototype) {
 	funcType := "main"
 	if f.LineDefined > 0 {
 		funcType = "function"
@@ -32,20 +39,66 @@ func PrintList(f *binchunk.Prototype) {
 	fmt.Printf("\n%s <%s:%d %d> (%d instructions)", funcType, f.Source, f.LineDefined, f.LastLineDefined, len(f.Code))
 	fmt.Printf("\n%d%s params, %d slots, %d upvalues, %d locals, %d constants, %d functions",
 		f.NumParams, varagFlag, f.MaxStackSize, len(f.Upvalues), len(f.LocVars), len(f.Constants), len(f.Protos))
+}
 
-	// printCode
+// PrintCode 打印函数体
+func PrintCode(f *binchunk.Prototype) {
 	if len(f.Code) > 0 {
-		fmt.Printf("\n\tIdx\tLine\tCode")
+		fmt.Printf("\n\tIdx\tLine\tName\t\tA\tB\tC")
 	}
 	for pc, c := range f.Code {
 		line := "-"
 		if len(f.LineInfo) > 0 {
 			line = fmt.Sprintf("%d", f.LineInfo[pc])
 		}
-		fmt.Printf("\n\t%d\t[%3s]\t0x%08X", pc+1, line, c)
+		i := vm.Instruction(c)
+		fmt.Printf("\n\t%d\t[%3s]\t%8s", pc+1, line, i.OpName())
+		PrintInstruction(i)
 	}
+}
 
-	// printDetail
+// PrintInstruction 打印函数指令
+func PrintInstruction(i vm.Instruction) {
+	fmt.Printf("\t")
+	switch i.OpMode() {
+	case vm.IABC:
+		a, b, c := i.ABC()
+		fmt.Printf("%d", a)
+		if i.BMode() != vm.OpArgN {
+			if b > 0xFF {
+				// 常量表索引时以负数形式输出
+				fmt.Printf("\t%d", -1-b&0xFF)
+			} else {
+				fmt.Printf("\t%d", b)
+			}
+		}
+		if i.CMode() != vm.OpArgN {
+			if c > 0xFF {
+				// 常量表索引时以负数形式输出
+				fmt.Printf("C\t%d", -1-c&0xFF)
+			} else {
+				fmt.Printf("\t%d", c)
+			}
+		}
+	case vm.IABx:
+		a, bx := i.ABx()
+		fmt.Printf("%d", a)
+		if i.BMode() == vm.OpArgK {
+			// 常量表索引时以负数形式输出
+			fmt.Printf("\t%d", -1-bx&0xFF)
+		} else if i.BMode() == vm.OpArgU {
+			fmt.Printf("\t%d", bx)
+		}
+	case vm.IAsBx:
+		a, sbx := i.AsBx()
+		fmt.Printf("%d\t%d", a, sbx)
+	case vm.IAx:
+		fmt.Printf("%d", -1-i.Ax())
+	}
+}
+
+// PrintDetail 打印详细信息 本地变量+upvalue
+func PrintDetail(f *binchunk.Prototype) {
 	fmt.Printf("\nconstants (%d):", len(f.Constants))
 	if len(f.Constants) > 0 {
 		fmt.Printf("\n\tIdx\tValue")
@@ -88,9 +141,11 @@ func PrintList(f *binchunk.Prototype) {
 		}
 		fmt.Printf("\n\t%d\t%s\t%d\t%d", i, upvalueName, upval.Instack, upval.Idx)
 	}
+}
 
-	// printPrototypes
+// PrintPrototypes 打印子函数
+func PrintPrototypes(f *binchunk.Prototype) {
 	for _, p := range f.Protos {
-		PrintList(p)
+		PrintPrototype(p)
 	}
 }
