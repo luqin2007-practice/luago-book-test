@@ -1,9 +1,5 @@
 package binchunk
 
-import (
-	"fmt"
-)
-
 type Header struct {
 	Signature       [4]byte
 	Version         byte
@@ -40,9 +36,9 @@ type Upvalue struct {
 } // upvalue 表
 
 type LocVar struct {
-	varName string
-	startPC uint32
-	endPC   uint32
+	VarName string
+	StartPC uint32
+	EndPC   uint32
 } // 局部变量表
 
 // Header
@@ -76,83 +72,4 @@ func Undump(data []byte) *Prototype {
 	reader.readByte() // skip upvalue
 	body := reader.readProto("")
 	return body
-}
-
-func PrintList(f *Prototype) {
-
-	// printHead
-	funcType := "main"
-	if f.LineDefined > 0 {
-		funcType = "function"
-	}
-
-	varagFlag := ""
-	if f.IsVararg > 0 {
-		varagFlag = "+"
-	}
-
-	fmt.Printf("\n%s <%s:%d %d> (%d instructions)", funcType, f.Source, f.LineDefined, f.LastLineDefined, len(f.Code))
-	fmt.Printf("\n%d%s params, %d slots, %d upvalues, %d locals, %d constants, %d functions",
-		f.NumParams, varagFlag, f.MaxStackSize, len(f.Upvalues), len(f.LocVars), len(f.Constants), len(f.Protos))
-
-	// printCode
-	if len(f.Code) > 0 {
-		fmt.Printf("\n\tIdx\tLine\tCode")
-	}
-	for pc, c := range f.Code {
-		line := "-"
-		if len(f.LineInfo) > 0 {
-			line = fmt.Sprintf("%d", f.LineInfo[pc])
-		}
-		fmt.Printf("\n\t%d\t[%3s]\t0x%08X", pc+1, line, c)
-	}
-
-	// printDetail
-	fmt.Printf("\nconstants (%d):", len(f.Constants))
-	if len(f.Constants) > 0 {
-		fmt.Printf("\n\tIdx\tValue")
-	}
-	for i, k := range f.Constants {
-		var constant string
-		switch k.(type) {
-		case nil:
-			constant = "null"
-		case bool:
-			constant = fmt.Sprintf("%t", k)
-		case float64:
-			constant = fmt.Sprintf("%g", k)
-		case int64:
-			constant = fmt.Sprintf("%d", k)
-		case string:
-			constant = fmt.Sprintf("%q", k)
-		default:
-			constant = fmt.Sprintf("%v", k)
-		}
-		fmt.Printf("\n\t%d\t%s", i+1, constant)
-	}
-
-	fmt.Printf("\nlocals (%d):", len(f.LocVars))
-	if len(f.LocVars) > 0 {
-		fmt.Printf("\n\t\tName\tStartPC\tEndPC")
-	}
-	for i, locVar := range f.LocVars {
-		fmt.Printf("\n\t%d\t%s\t%d\t%d", i, locVar.varName, locVar.startPC+1, locVar.endPC+1)
-	}
-
-	fmt.Printf("\nupvalues (%d):", len(f.Upvalues))
-	if len(f.Upvalues) > 0 {
-		fmt.Printf("\n\t\tName\tInstack\tIdx")
-	}
-	for i, upval := range f.Upvalues {
-		upvalueName := "-"
-		if len(f.UpvalueNames) > 0 {
-			upvalueName = f.UpvalueNames[i]
-		}
-		fmt.Printf("\n\t%d\t%s\t%d\t%d", i, upvalueName, upval.Instack, upval.Idx)
-	}
-
-	// printPrototypes
-	for _, p := range f.Protos {
-		PrintList(p)
-	}
 }

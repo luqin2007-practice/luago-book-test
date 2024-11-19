@@ -205,8 +205,8 @@ func (self *reader) readUpvalue() Upvalue {
 
 func (self *reader) readLocVar() LocVar {
 	return LocVar{
-		varName: self.readString(),
-		startPC: self.readUint32(),
-		endPC:   self.readUint32(),
+		VarName: self.readString(),
+		StartPC: self.readUint32(),
+		EndPC:   self.readUint32(),
 	}
 }
