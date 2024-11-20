@@ -9,7 +9,7 @@ import (
 )
 
 func TestPrototype(t *testing.T) {
-	data, err := os.ReadFile("C:\\Dev\\projects\\go-luacompiler\\lua-test\\helloworld53.lunc")
+	data, err := os.ReadFile("helloworld.lunc")
 	if err != nil {
 		panic(err)
 	}
