@@ -23,19 +23,19 @@ type Prototype struct {
 	MaxStackSize    byte
 	Code            []uint32
 	Constants       []interface{}
-	Upvalues        []Upvalue
+	Upvalues        []upvalue
 	Protos          []*Prototype
 	LineInfo        []uint32
-	LocVars         []LocVar
+	LocVars         []locVar
 	UpvalueNames    []string
 } // 函数原型
 
-type Upvalue struct {
+type upvalue struct {
 	Instack byte
 	Idx     byte
 } // upvalue 表
 
-type LocVar struct {
+type locVar struct {
 	VarName string
 	StartPC uint32
 	EndPC   uint32
