@@ -64,7 +64,7 @@ const (
 	OpArgK
 )
 
-type Opcode struct {
+type opcode struct {
 	TestFlag byte
 	SetAFlag byte
 	ArgBMode byte
@@ -73,7 +73,7 @@ type Opcode struct {
 	Name     string
 }
 
-var opcodes = []Opcode{
+var opcodes = []opcode{
 	{0, 1, OpArgR, OpArgN, IABC, "MOVE"},
 	{0, 1, OpArgK, OpArgN, IABx, "LOADK"},
 	{0, 1, OpArgN, OpArgN, IABx, "LOADKX"},
