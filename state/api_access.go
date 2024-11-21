@@ -84,8 +84,8 @@ func (self *luaState) ToInteger(index int) int64 {
 }
 
 func (self *luaState) ToIntegerX(index int) (int64, bool) {
-	i, ok := self.stack.get(index).(int64)
-	return i, ok
+	val := self.stack.get(index)
+	return convertToInteger(val)
 }
 
 func (self *luaState) ToNumber(index int) float64 {
@@ -94,14 +94,8 @@ func (self *luaState) ToNumber(index int) float64 {
 }
 
 func (self *luaState) ToNumberX(index int) (float64, bool) {
-	switch x := self.stack.get(index).(type) {
-	case float64:
-		return x, true
-	case int64:
-		return float64(x), true
-	default:
-		return 0, false
-	}
+	val := self.stack.get(index)
+	return convertToFloat(val)
 }
 
 func (self *luaState) ToString(index int) string {
