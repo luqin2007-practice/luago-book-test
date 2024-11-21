@@ -9,7 +9,7 @@ import (
 )
 
 func TestPrototype(t *testing.T) {
-	data, err := os.ReadFile("helloworld.lunc")
+	data, err := os.ReadFile("helloworld.out")
 	if err != nil {
 		panic(err)
 	}

@@ -1,5 +1,7 @@
 package vm
 
+import "go-luacompiler/api"
+
 type Instruction uint32
 
 const MAXARG_Bx = 1<<18 - 1
@@ -32,17 +34,26 @@ func (self Instruction) Ax() int {
 }
 
 func (self Instruction) OpName() string {
-	return opcodes[self.Opcode()].Name
+	return opcodes[self.Opcode()].name
 }
 
 func (self Instruction) OpMode() byte {
-	return opcodes[self.Opcode()].OpMode
+	return opcodes[self.Opcode()].opMode
 }
 
 func (self Instruction) BMode() byte {
-	return opcodes[self.Opcode()].ArgBMode
+	return opcodes[self.Opcode()].argBMode
 }
 
 func (self Instruction) CMode() byte {
-	return opcodes[self.Opcode()].ArgCMode
+	return opcodes[self.Opcode()].argCMode
+}
+
+func (self Instruction) Execute(vm api.LuaVM) {
+	action := opcodes[self.Opcode()].action
+	if action != nil {
+		action(self, vm)
+	} else {
+		panic(self.OpName())
+	}
 }
