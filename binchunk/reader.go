@@ -84,57 +84,57 @@ func readList[T any](self *reader, f func() T) []T {
 func (self *reader) readHeader(check bool) *Header {
 	signature := self.readBytes(4)
 	if check && string(signature) != LUA_SIGNATURE {
-		panic("invalid lua signature")
+		panic("invalid lua signature!")
 	}
 
 	version := self.readByte()
 	if check && version != LUA_VERSION {
-		panic("invalid lua version")
+		panic("invalid lua version!")
 	}
 
 	format := self.readByte()
 	if check && format != LUAC_FORMAT {
-		panic("invalid lua format")
+		panic("invalid lua format!")
 	}
 
 	luacData := self.readBytes(6)
 	if check && string(luacData) != LUAC_DATA {
-		panic("invalid lua data")
+		panic("invalid lua data!")
 	}
 
 	cintSize := self.readByte()
 	if check && cintSize != CINT_SIZE {
-		panic("invalid lua cint size")
+		panic("invalid lua cint size!")
 	}
 
 	sizetSize := self.readByte()
 	if check && sizetSize != CSIZET_SIZE {
-		panic("invalid lua size_t size")
+		panic("invalid lua size_t size!")
 	}
 
 	instructionSize := self.readByte()
 	if check && instructionSize != INSTRUCTION_SIZE {
-		panic("invalid lua instruction size")
+		panic("invalid lua instruction size!")
 	}
 
 	luaIntegerSize := self.readByte()
 	if check && luaIntegerSize != LUA_INTEGER_SIZE {
-		panic("invalid lua lua integer size")
+		panic("invalid lua lua integer size!")
 	}
 
 	luaNumberSize := self.readByte()
 	if check && luaNumberSize != LUA_NUMBER_SIZE {
-		panic("invalid lua number size")
+		panic("invalid lua number size!")
 	}
 
 	luacInt := self.readLuaInteger()
 	if check && luacInt != LUAC_INT {
-		panic("invalid endianness")
+		panic("invalid endianness!")
 	}
 
 	luacNum := self.readLuaNumber()
 	if check && luacNum != LUAC_NUM {
-		panic("invalid float format")
+		panic("invalid float format!")
 	}
 
 	return &Header{
@@ -192,7 +192,7 @@ func (self *reader) readConstant() interface{} {
 	case TAG_LONG_STR:
 		return self.readString()
 	default:
-		panic("invalid tag")
+		panic("invalid tag!")
 	}
 }
 

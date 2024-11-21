@@ -13,7 +13,7 @@ func (self *luaState) Compare(index1, index2 int, op api.CompareOp) bool {
 	case api.LUA_OPLE:
 		return _le(a, b)
 	default:
-		panic("invalid compare op")
+		panic("invalid compare op!")
 	}
 }
 
@@ -73,7 +73,7 @@ func _lt(a, b luaValue) bool {
 			return x < y
 		}
 	}
-	panic("comparison error")
+	panic("comparison error!")
 }
 
 // 比较 a <= b
@@ -98,5 +98,5 @@ func _le(a, b luaValue) bool {
 			return x <= y
 		}
 	}
-	panic("comparison error")
+	panic("comparison error!")
 }

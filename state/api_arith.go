@@ -38,7 +38,7 @@ func (self *luaState) Arith(op api.ArithOp) {
 	if result := arith(a, b, operator); result != nil {
 		self.stack.push(result)
 	} else {
-		panic("arithmetic error")
+		panic("arithmetic error!")
 	}
 }
 

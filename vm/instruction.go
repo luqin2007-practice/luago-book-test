@@ -1,6 +1,9 @@
 package vm
 
-import "go-luacompiler/api"
+import (
+	"fmt"
+	"go-luacompiler/api"
+)
 
 type Instruction uint32
 
@@ -54,6 +57,6 @@ func (self Instruction) Execute(vm api.LuaVM) {
 	if action != nil {
 		action(self, vm)
 	} else {
-		panic(self.OpName())
+		panic(fmt.Sprintf("unknown instruction %s!", self.OpName()))
 	}
 }

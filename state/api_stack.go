@@ -62,7 +62,7 @@ func (self *luaState) Rotate(index, n int) {
 func (self *luaState) SetTop(index int) {
 	absIndex := self.stack.absIndex(index)
 	if absIndex < 0 {
-		panic(fmt.Sprintf("index %d(%d) out of range", index, absIndex))
+		panic(fmt.Sprintf("index %d(%d) out of range!", index, absIndex))
 	}
 
 	n := self.stack.top - absIndex

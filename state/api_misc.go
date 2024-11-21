@@ -6,7 +6,7 @@ func (self *luaState) Len(index int) {
 	if s, ok := val.(string); ok {
 		self.stack.push(int64(len(s)))
 	} else {
-		panic("length error")
+		panic("length error!")
 	}
 }
 
@@ -23,7 +23,7 @@ func (self *luaState) Concat(n int) {
 				self.stack.push(s1 + s2)
 				continue
 			}
-			panic("concatenation error")
+			panic("concatenation error!")
 		}
 	}
 	// n == 1: do nothing
