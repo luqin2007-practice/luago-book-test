@@ -2,6 +2,9 @@ package api
 
 type LuaType = int
 
+type ArithOp = int
+type CompareOp = int
+
 type LuaState interface {
 
 	/* 基础栈操作 */
@@ -76,4 +79,19 @@ type LuaState interface {
 	PushNumber(n float64)
 	// PushString 将一个字符串入栈
 	PushString(s string)
+
+	/* 运算函数 */
+
+	// Arith 按位运算、算术运算
+	// 从栈顶弹出运算数并将结果压栈
+	Arith(op ArithOp)
+	// Compare 比较运算
+	// 比较栈中两个位置的变量，不改变栈状态
+	Compare(index1, index2 int, op CompareOp) bool
+	// Len 长度计算，获取列表长度 #
+	// 从栈中指定索引获取值，取值的长度并压栈
+	Len(index int)
+	// Concat 字符串拼接 ..
+	// 从栈顶弹出 n 个值，拼接成一个字符串后压栈
+	Concat(n int)
 }

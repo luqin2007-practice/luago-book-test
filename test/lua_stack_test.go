@@ -23,7 +23,7 @@ func TestLuaStack(t *testing.T) {
 	   true
 	*/
 	ls.PushInteger(10)
-	assert.Equal(t, "[true][10.000000]", printStack(ls))
+	assert.Equal(t, "[true][10]", printStack(ls))
 
 	/*
 	   nil
@@ -31,7 +31,7 @@ func TestLuaStack(t *testing.T) {
 	   true
 	*/
 	ls.PushNil()
-	assert.Equal(t, "[true][10.000000][nil]", printStack(ls))
+	assert.Equal(t, "[true][10][nil]", printStack(ls))
 
 	/*
 	   hello
@@ -40,7 +40,7 @@ func TestLuaStack(t *testing.T) {
 	   true
 	*/
 	ls.PushString("hello")
-	assert.Equal(t, "[true][10.000000][nil][\"hello\"]", printStack(ls))
+	assert.Equal(t, "[true][10][nil][\"hello\"]", printStack(ls))
 
 	/*
 	         | true
@@ -50,7 +50,7 @@ func TestLuaStack(t *testing.T) {
 	   true  | true
 	*/
 	ls.PushValue(-4)
-	assert.Equal(t, "[true][10.000000][nil][\"hello\"][true]", printStack(ls))
+	assert.Equal(t, "[true][10][nil][\"hello\"][true]", printStack(ls))
 
 	/*
 	   true  |
@@ -60,7 +60,7 @@ func TestLuaStack(t *testing.T) {
 	   true  | true
 	*/
 	ls.Replace(3)
-	assert.Equal(t, "[true][10.000000][true][\"hello\"]", printStack(ls))
+	assert.Equal(t, "[true][10][true][\"hello\"]", printStack(ls))
 
 	/*
 	         | nil
@@ -71,7 +71,7 @@ func TestLuaStack(t *testing.T) {
 	   true  | true
 	*/
 	ls.SetTop(6)
-	assert.Equal(t, "[true][10.000000][true][\"hello\"][nil][nil]", printStack(ls))
+	assert.Equal(t, "[true][10][true][\"hello\"][nil][nil]", printStack(ls))
 
 	/*
 	   nil   |
@@ -82,7 +82,7 @@ func TestLuaStack(t *testing.T) {
 	   true  | true
 	*/
 	ls.Remove(-3)
-	assert.Equal(t, "[true][10.000000][true][nil][nil]", printStack(ls))
+	assert.Equal(t, "[true][10][true][nil][nil]", printStack(ls))
 
 	/*
 	   nil  |
@@ -104,7 +104,11 @@ func printStack(ls api.LuaState) string {
 		case api.LUA_TBOOLEAN:
 			builder.WriteString(fmt.Sprintf("[%t]", ls.ToBoolean(i)))
 		case api.LUA_TNUMBER:
-			builder.WriteString(fmt.Sprintf("[%f]", ls.ToNumber(i)))
+			if ls.IsInteger(i) {
+				builder.WriteString(fmt.Sprintf("[%d]", ls.ToInteger(i)))
+			} else {
+				builder.WriteString(fmt.Sprintf("[%f]", ls.ToNumber(i)))
+			}
 		case api.LUA_TSTRING:
 			builder.WriteString(fmt.Sprintf("[%q]", ls.ToString(i)))
 		default:
