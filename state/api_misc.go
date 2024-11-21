@@ -2,9 +2,10 @@ package state
 
 func (self *luaState) Len(index int) {
 	val := self.stack.get(index)
-	// TODO 只实现了字符串
 	if s, ok := val.(string); ok {
 		self.stack.push(int64(len(s)))
+	} else if t, ok := val.(*luaTable); ok {
+		self.stack.push(t.len())
 	} else {
 		panic("length error!")
 	}

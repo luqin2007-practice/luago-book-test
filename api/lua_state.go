@@ -83,15 +83,43 @@ type LuaState interface {
 	/* 运算函数 */
 
 	// Arith 按位运算、算术运算
-	// 从栈顶弹出运算数并将结果压栈
+	//   从栈顶弹出运算数并将结果压栈
 	Arith(op ArithOp)
 	// Compare 比较运算
-	// 比较栈中两个位置的变量，不改变栈状态
+	//   比较栈中两个位置的变量，不改变栈状态
 	Compare(index1, index2 int, op CompareOp) bool
 	// Len 长度计算，获取列表长度 #
-	// 从栈中指定索引获取值，取值的长度并压栈
+	//   从栈中指定索引获取值，取值的长度并压栈
 	Len(index int)
 	// Concat 字符串拼接 ..
-	// 从栈顶弹出 n 个值，拼接成一个字符串后压栈
+	//   从栈顶弹出 n 个值，拼接成一个字符串后压栈
 	Concat(n int)
+
+	/* 表相关 */
+
+	// NewTable 创建无法预估大小的表，并放入栈顶
+	//   等价于 CreateTable(0,0)
+	NewTable()
+	// CreateTable 创建表，并放入栈顶
+	//   nArr: 预估列表部分长度
+	//   nRec: 预估记录部分长度
+	CreateTable(nArr, nRec int)
+	// GetTable 获取表元素
+	//   将栈顶元素作为键，从 index 位置的表中获取数据并放入栈顶
+	//   返回表元素的类型
+	GetTable(index int) LuaType
+	// GetField 获取表元素
+	//   将给定字符串，从 index 位置的表中获取数据并放入栈顶
+	//   返回表元素的类型
+	GetField(index int, k string) LuaType
+	// GetI 获取表元素
+	//   将给定字符串，从 index 位置的表中获取数据并放入栈顶
+	//   返回表元素的类型
+	GetI(index int, i int64) LuaType
+	// SetTable 将栈顶两个元素作为 k v 存入 index 位置的表中
+	SetTable(index int)
+	// SetField 将栈顶元素和给定字符串键存入 index 位置的表中
+	SetField(index int, k string)
+	// SetI 将栈顶元素和给定数字键存入 index 位置的表中
+	SetI(index int, i int64)
 }
