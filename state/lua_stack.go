@@ -1,16 +1,27 @@
 package state
 
-import "fmt"
+import (
+	"fmt"
+	"go-luacompiler/binchunk"
+)
 
 type luaStack struct {
-	slots []luaValue
-	top   int
+	slots   []luaValue
+	top     int
+	prev    *luaStack
+	closure *Closure
+	varargs []luaValue
+	pc      int
 }
 
-func newLuaState(size int) *luaStack {
+func newLuaState(size int, proto *binchunk.Prototype) *luaStack {
 	return &luaStack{
-		slots: make([]luaValue, size),
-		top:   0,
+		slots:   make([]luaValue, size),
+		top:     0,
+		prev:    nil,
+		closure: newLuaClosure(proto),
+		varargs: []luaValue{},
+		pc:      0,
 	}
 }
 
