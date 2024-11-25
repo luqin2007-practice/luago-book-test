@@ -8,7 +8,7 @@ import (
 )
 
 func TestLuaOp(t *testing.T) {
-	ls := state.New(20, nil)
+	ls := state.New(20)
 
 	ls.PushInteger(1)
 	ls.PushString("2.0")

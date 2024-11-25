@@ -15,6 +15,7 @@ import "go-luacompiler/api"
 */
 func loadNil(i Instruction, vm api.LuaVM) {
 	a, b, _ := i.ABC()
+	a += 1
 
 	vm.PushNil()
 	for i := a; i <= a+b; i++ {

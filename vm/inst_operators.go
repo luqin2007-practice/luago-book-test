@@ -168,7 +168,6 @@ func le(i Instruction, vm api.LuaVM) {
 */
 func _compare(i Instruction, vm api.LuaVM, op api.CompareOp) {
 	a, b, c := i.ABC()
-	a += 1
 
 	vm.GetRK(b)
 	vm.GetRK(c)

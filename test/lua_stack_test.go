@@ -10,7 +10,7 @@ import (
 )
 
 func TestLuaStack(t *testing.T) {
-	ls := state.New(20, nil)
+	ls := state.New(20)
 
 	/*
 	   true

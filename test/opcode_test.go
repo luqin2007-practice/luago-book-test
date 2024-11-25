@@ -55,7 +55,7 @@ func TestOpcode(t *testing.T) {
 
 	// 初始化 LuaVM
 	regs := int(proto.MaxStackSize)
-	ls := state.New(regs+8, proto)
+	ls := state.New(regs + 8)
 	ls.SetTop(regs)
 
 	// 运行

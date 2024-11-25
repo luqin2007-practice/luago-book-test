@@ -80,6 +80,7 @@ func (self *luaTable) put(key luaValue, value luaValue) {
 
 // len 获取表的列表部分长度
 func (self *luaTable) len() int64 {
+	self._shrinkArray()
 	return int64(len(self.arr))
 }
 

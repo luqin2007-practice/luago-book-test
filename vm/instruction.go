@@ -54,9 +54,10 @@ func (self Instruction) CMode() byte {
 
 func (self Instruction) Execute(vm api.LuaVM) {
 	action := opcodes[self.Opcode()].action
+	name := opcodes[self.Opcode()].name
 	if action != nil {
 		action(self, vm)
 	} else {
-		panic(fmt.Sprintf("unknown instruction %s!", self.OpName()))
+		panic(fmt.Sprintf("unknown instruction %s!", name))
 	}
 }

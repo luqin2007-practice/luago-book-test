@@ -1,14 +1,12 @@
 package state
 
-import "go-luacompiler/binchunk"
-
 type luaState struct {
 	stack *luaStack
 }
 
-func New(stackSize int, proto *binchunk.Prototype) *luaState {
+func New(stackSize int) *luaState {
 	return &luaState{
-		stack: newLuaState(stackSize, proto),
+		stack: newLuaState(stackSize),
 	}
 }
 

@@ -2,7 +2,6 @@ package state
 
 import (
 	"fmt"
-	"go-luacompiler/binchunk"
 )
 
 type luaStack struct {
@@ -14,12 +13,12 @@ type luaStack struct {
 	pc      int
 }
 
-func newLuaState(size int, proto *binchunk.Prototype) *luaStack {
+func newLuaState(size int) *luaStack {
 	return &luaStack{
 		slots:   make([]luaValue, size),
 		top:     0,
 		prev:    nil,
-		closure: newLuaClosure(proto),
+		closure: nil,
 		varargs: []luaValue{},
 		pc:      0,
 	}
@@ -45,6 +44,21 @@ func (self *luaStack) push(val luaValue) {
 	self.top++
 }
 
+func (self *luaStack) pushN(vals []luaValue, n int) {
+	nVals := len(vals)
+	if n < 0 {
+		n = nVals
+	}
+
+	for i := 0; i < n; i++ {
+		if i < nVals {
+			self.push(vals[i])
+		} else {
+			self.push(nil)
+		}
+	}
+}
+
 func (self *luaStack) pop() (val luaValue) {
 	if self.top < 1 {
 		// TODO
@@ -54,6 +68,14 @@ func (self *luaStack) pop() (val luaValue) {
 	val = self.slots[self.top]
 	self.slots[self.top] = nil
 	return
+}
+
+func (self *luaStack) popN(n int) []luaValue {
+	vals := make([]luaValue, n)
+	for i := n - 1; i >= 0; i-- {
+		vals[i] = self.pop()
+	}
+	return vals
 }
 
 // absIndex 将相对索引转换成绝对索引
