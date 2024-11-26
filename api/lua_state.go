@@ -5,6 +5,8 @@ type LuaType = int
 type ArithOp = int
 type CompareOp = int
 
+type GoFunction func(state LuaState) int
+
 type LuaState interface {
 
 	/* 基础栈操作 */
@@ -52,6 +54,8 @@ type LuaState interface {
 	IsNumber(index int) bool
 	// IsString 判断给定 index 是否为字符串，或可被转换为字符串
 	IsString(index int) bool
+	// IsGoFunction 判断给定 index 是否为 Go 函数
+	IsGoFunction(index int) bool
 	// ToBoolean 将给定 index 值转换为布尔值
 	ToBoolean(index int) bool
 	// ToInteger 将给定 index 值转换为整型
@@ -66,6 +70,8 @@ type LuaState interface {
 	ToString(index int) string
 	// ToStringX 将给定 index 值转换为数字，返回转换是否成功
 	ToStringX(index int) (string, bool)
+	// ToGoFunction 将给定 index 值转换为 Go 函数，返回转换是否成功
+	ToGoFunction(index int) GoFunction
 
 	/* 入栈函数 */
 
@@ -79,6 +85,8 @@ type LuaState interface {
 	PushNumber(n float64)
 	// PushString 将一个字符串入栈
 	PushString(s string)
+	// PushGoFunction 将一个 Go 函数入栈
+	PushGoFunction(f GoFunction)
 
 	/* 运算函数 */
 

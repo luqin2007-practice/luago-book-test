@@ -26,6 +26,33 @@ func (self *luaState) Call(nArgs, nResults int) {
 	}
 	fmt.Printf("call %s<%d,%d>\n", c.proto.Source, c.proto.LineDefined, c.proto.LastLineDefined)
 
+	if c.proto != nil {
+		self.callLuaClosure(c, nArgs, nResults)
+	} else {
+		self.callGoClosure(c, nArgs, nResults)
+	}
+}
+
+func (self *luaState) LoadProto(n int) {
+	proto := self.stack.closure.proto.Protos[n]
+	closure := newLuaClosure(proto)
+	self.stack.push(closure)
+}
+
+func (self *luaState) RegisterCount() int {
+	return int(self.stack.closure.proto.MaxStackSize)
+}
+
+func (self *luaState) LoadVararg(n int) {
+	if n < 0 {
+		n = len(self.stack.varargs)
+	}
+
+	self.stack.check(n)
+	self.stack.pushN(self.stack.varargs, n)
+}
+
+func (self *luaState) callLuaClosure(c *Closure, nArgs, nResults int) {
 	nRegs := int(c.proto.MaxStackSize) // 函数所需寄存器大小
 	nParams := int(c.proto.NumParams)  // 函数声明参数数量
 	isVararg := c.proto.IsVararg == 1  // 函数是否包含变长参数
@@ -55,25 +82,6 @@ func (self *luaState) Call(nArgs, nResults int) {
 	}
 }
 
-func (self *luaState) LoadProto(n int) {
-	proto := self.stack.closure.proto.Protos[n]
-	closure := newLuaClosure(proto)
-	self.stack.push(closure)
-}
-
-func (self *luaState) RegisterCount() int {
-	return int(self.stack.closure.proto.MaxStackSize)
-}
-
-func (self *luaState) LoadVararg(n int) {
-	if n < 0 {
-		n = len(self.stack.varargs)
-	}
-
-	self.stack.check(n)
-	self.stack.pushN(self.stack.varargs, n)
-}
-
 // 执行闭包
 func (self *luaState) runLuaClosure() {
 	for {
@@ -84,5 +92,24 @@ func (self *luaState) runLuaClosure() {
 		if inst.Opcode() == vm.OP_RETURN {
 			break
 		}
+	}
+}
+
+func (self *luaState) callGoClosure(c *Closure, nArgs, nResults int) {
+	newStack := newLuaState(nArgs + 20)
+	newStack.closure = c
+
+	args := self.stack.popN(nArgs)
+	newStack.pushN(args, nArgs)
+	self.stack.pop()
+
+	self.pushLuaStack(newStack)
+	r := c.goFunc(self)
+	self.popLuaStack()
+
+	if nResults != 0 {
+		results := newStack.popN(r)
+		self.stack.check(len(results))
+		self.stack.pushN(results, nResults)
 	}
 }
