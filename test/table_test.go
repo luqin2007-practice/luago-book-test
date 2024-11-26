@@ -60,7 +60,7 @@ func TestTable(t *testing.T) {
 
 	// 初始化 LuaVM
 	regs := int(proto.MaxStackSize)
-	ls := state.New(regs + 8)
+	ls := state.New()
 	ls.SetTop(regs)
 
 	// 运行
@@ -78,8 +78,8 @@ func TestTable(t *testing.T) {
 		// 执行指令
 		inst.Execute(ls)
 		fmt.Printf("[%02d]\t%-10s\t", pc+1, inst.OpName())
-		printStack(ls)
+		PrintStack(ls)
 	}
 
-	assert.Equal(t, "[table][\"cBaBar3\"][\"B\"][\"a\"][\"Bar\"][3]", printStack(ls))
+	assert.Equal(t, "[table][\"cBaBar3\"][\"B\"][\"a\"][\"Bar\"][3]", PrintStack(ls))
 }

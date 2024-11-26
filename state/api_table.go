@@ -27,23 +27,9 @@ func (self *luaState) GetI(index int, i int64) api.LuaType {
 	return self.getTable(table, i)
 }
 
-func (self *luaState) SetTable(index int) {
-	table := self.stack.get(index)
-	key := self.stack.pop()
-	val := self.stack.pop()
-	setTable(table, key, val)
-}
-
-func (self *luaState) SetField(index int, k string) {
-	table := self.stack.get(index)
-	val := self.stack.pop()
-	setTable(table, k, val)
-}
-
-func (self *luaState) SetI(index int, i int64) {
-	table := self.stack.get(index)
-	val := self.stack.pop()
-	setTable(table, i, val)
+func (self *luaState) GetGlobal(name string) api.LuaType {
+	table := self.registry.get(api.LUA_REGISTRYINDEX)
+	return self.getTable(table, name)
 }
 
 // getTable 从表中获取值，并将结果放入栈顶
@@ -54,12 +40,4 @@ func (self *luaState) getTable(table luaValue, key luaValue) api.LuaType {
 		return typeOf(v)
 	}
 	panic("not a table!")
-}
-
-func setTable(table luaValue, key luaValue, val luaValue) {
-	if t, ok := table.(*luaTable); ok {
-		t.put(key, val)
-	} else {
-		panic("not a table!")
-	}
 }

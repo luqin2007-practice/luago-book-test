@@ -1,13 +1,20 @@
 package state
 
+import "go-luacompiler/api"
+
 type luaState struct {
-	stack *luaStack
+	registry *luaTable
+	stack    *luaStack
 }
 
-func New(stackSize int) *luaState {
-	return &luaState{
-		stack: newLuaState(stackSize),
-	}
+func New() *luaState {
+	registry := newLuaTable(0, 0)
+	// 全局变量表
+	registry.put(api.LUA_RIDX_GLOBALS, newLuaTable(0, 0))
+
+	ls := &luaState{registry: registry}
+	ls.pushLuaStack(newLuaState(api.LUA_MINSTACK, ls))
+	return ls
 }
 
 // pushLuaStack 调用栈入栈

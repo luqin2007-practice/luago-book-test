@@ -173,7 +173,7 @@ func TestFunction(t *testing.T) {
 		panic(err)
 	}
 
-	ls := state.New(20)
+	ls := state.New()
 	ls.Load(data, "function", "b")
 	ls.Call(0, 0)
 }

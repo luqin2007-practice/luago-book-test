@@ -38,3 +38,11 @@ const (
 	LUA_OPLT        // < | >=
 	LUA_OPLE        // <= | >
 )
+
+// 注册表
+const LUA_MINSTACK = 20
+
+// 注册表
+const LUAI_MAXSTACK = 1_000_000
+const LUA_REGISTRYINDEX = -LUAI_MAXSTACK - 1000
+const LUA_RIDX_GLOBALS int64 = 2

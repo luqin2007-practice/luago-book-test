@@ -87,6 +87,8 @@ type LuaState interface {
 	PushString(s string)
 	// PushGoFunction 将一个 Go 函数入栈
 	PushGoFunction(f GoFunction)
+	// PushGlobalTable 将全局变量表推入栈顶
+	PushGlobalTable()
 
 	/* 运算函数 */
 
@@ -124,12 +126,20 @@ type LuaState interface {
 	//   将给定字符串，从 index 位置的表中获取数据并放入栈顶
 	//   返回表元素的类型
 	GetI(index int, i int64) LuaType
+	// GetGlobal 使用字符串从全局变量表中取值
+	//   比 PushGlobalTable + GetField 效率高一点
+	GetGlobal(name string) LuaType
 	// SetTable 将栈顶两个元素作为 k v 存入 index 位置的表中
 	SetTable(index int)
 	// SetField 将栈顶元素和给定字符串键存入 index 位置的表中
 	SetField(index int, k string)
 	// SetI 将栈顶元素和给定数字键存入 index 位置的表中
 	SetI(index int, i int64)
+	// SetGlobal 将栈顶元素存入全局变量表
+	//   比 PushGlobalTable + SetField 效率高一点
+	SetGlobal(name string)
+	// Register 在全局变量表中添加 Go 函数
+	Register(name string, f GoFunction)
 
 	/* 函数调用 */
 

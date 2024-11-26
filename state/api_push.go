@@ -25,3 +25,7 @@ func (self *luaState) PushString(s string) {
 func (self *luaState) PushGoFunction(f api.GoFunction) {
 	self.stack.push(newGoClosure(f))
 }
+
+func (self *luaState) PushGlobalTable() {
+	self.stack.push(self.registry.get(api.LUA_RIDX_GLOBALS))
+}

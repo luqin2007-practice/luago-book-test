@@ -2,6 +2,7 @@ package state
 
 import (
 	"fmt"
+	"go-luacompiler/api"
 	"go-luacompiler/binchunk"
 	"go-luacompiler/vm"
 )
@@ -24,7 +25,7 @@ func (self *luaState) Call(nArgs, nResults int) {
 	if !ok {
 		panic("not a function or closure!")
 	}
-	fmt.Printf("call %s<%d,%d>\n", c.proto.Source, c.proto.LineDefined, c.proto.LastLineDefined)
+	//fmt.Printf("call %s<%d,%d>\n", c.proto.Source, c.proto.LineDefined, c.proto.LastLineDefined)
 
 	if c.proto != nil {
 		self.callLuaClosure(c, nArgs, nResults)
@@ -58,7 +59,7 @@ func (self *luaState) callLuaClosure(c *Closure, nArgs, nResults int) {
 	isVararg := c.proto.IsVararg == 1  // 函数是否包含变长参数
 
 	// 创建闭包（函数）调用栈
-	newStack := newLuaState(nRegs + 20)
+	newStack := newLuaState(nRegs+api.LUA_MINSTACK, self)
 	newStack.closure = c
 
 	// 从当前栈中提取参数和闭包（函数），并将参数存入被调函数栈
@@ -96,7 +97,7 @@ func (self *luaState) runLuaClosure() {
 }
 
 func (self *luaState) callGoClosure(c *Closure, nArgs, nResults int) {
-	newStack := newLuaState(nArgs + 20)
+	newStack := newLuaState(nArgs+api.LUA_MINSTACK, self)
 	newStack.closure = c
 
 	args := self.stack.popN(nArgs)

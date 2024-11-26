@@ -21,6 +21,8 @@ func typeOf(v interface{}) api.LuaType {
 		return api.LUA_TSTRING
 	case *luaTable:
 		return api.LUA_TTABLE
+	case *Closure:
+		return api.LUA_TFUNCTION
 	default:
 		panic("TODO") // TODO 其他类型暂未实现
 	}

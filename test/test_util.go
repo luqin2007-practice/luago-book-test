@@ -2,8 +2,10 @@ package test
 
 import (
 	"fmt"
+	"go-luacompiler/api"
 	"go-luacompiler/binchunk"
 	"go-luacompiler/vm"
+	"strings"
 )
 
 func PrintPrototype(f *binchunk.Prototype) {
@@ -137,4 +139,29 @@ func PrintPrototypes(f *binchunk.Prototype) {
 	for _, p := range f.Protos {
 		PrintPrototype(p)
 	}
+}
+
+func PrintStack(ls api.LuaState) string {
+	top := ls.GetTop()
+	builder := strings.Builder{}
+	for i := 1; i <= top; i++ {
+		t := ls.Type(i)
+		switch t {
+		case api.LUA_TBOOLEAN:
+			builder.WriteString(fmt.Sprintf("[%t]", ls.ToBoolean(i)))
+		case api.LUA_TNUMBER:
+			if ls.IsInteger(i) {
+				builder.WriteString(fmt.Sprintf("[%d]", ls.ToInteger(i)))
+			} else {
+				builder.WriteString(fmt.Sprintf("[%f]", ls.ToNumber(i)))
+			}
+		case api.LUA_TSTRING:
+			builder.WriteString(fmt.Sprintf("[%q]", ls.ToString(i)))
+		default:
+			builder.WriteString(fmt.Sprintf("[%s]", ls.TypeName(t)))
+		}
+	}
+	str := builder.String()
+	fmt.Println(str)
+	return str
 }
