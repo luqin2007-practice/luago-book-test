@@ -33,6 +33,8 @@ type LuaState interface {
 	Rotate(index, n int)
 	// SetTop 设置栈顶索引
 	SetTop(index int)
+	// LuaUpvalueIndex 将注册表伪索引转换为 Upvalue 索引
+	LuaUpvalueIndex(i int) int
 
 	/* 索引访问函数 */
 
@@ -86,7 +88,7 @@ type LuaState interface {
 	// PushString 将一个字符串入栈
 	PushString(s string)
 	// PushGoFunction 将一个 Go 函数入栈
-	PushGoFunction(f GoFunction)
+	PushGoFunction(f GoFunction, n int)
 	// PushGlobalTable 将全局变量表推入栈顶
 	PushGlobalTable()
 

@@ -13,6 +13,7 @@ type luaStack struct {
 	varargs []luaValue
 	pc      int
 	state   *luaState
+	openuvs map[int]*upvalue
 }
 
 func newLuaState(size int, state *luaState) *luaStack {
@@ -62,15 +63,15 @@ func (self *luaStack) pushN(vals []luaValue, n int) {
 	}
 }
 
-func (self *luaStack) pop() (val luaValue) {
+func (self *luaStack) pop() luaValue {
 	if self.top < 1 {
 		// TODO
 		panic("stack underflow!")
 	}
 	self.top--
-	val = self.slots[self.top]
+	val := self.slots[self.top]
 	self.slots[self.top] = nil
-	return
+	return val
 }
 
 func (self *luaStack) popN(n int) []luaValue {
@@ -99,6 +100,12 @@ func (self *luaStack) isValid(n int) bool {
 		// 注册表伪索引
 		return true
 	}
+	if n < api.LUA_REGISTRYINDEX {
+		// Upvalue
+		uvIdx := api.LUA_REGISTRYINDEX - n - 1
+		c := self.closure
+		return c != nil && uvIdx < len(c.upvals)
+	}
 	n = self.absIndex(n)
 	return n > 0 && n <= self.top
 }
@@ -108,12 +115,20 @@ func (self *luaStack) set(n int, val luaValue) {
 	if n == api.LUA_REGISTRYINDEX {
 		// 注册表
 		self.state.registry = val.(*luaTable)
+	} else if n < api.LUA_REGISTRYINDEX {
+		// Upvalue
+		uvIdx := api.LUA_REGISTRYINDEX - n - 1
+		c := self.closure
+		if c != nil && uvIdx < len(c.upvals) {
+			*(c.upvals[uvIdx].val) = val
+		}
+	} else {
+		absIndex := self.absIndex(n)
+		if !self.isValid(absIndex) {
+			panic(fmt.Sprintf("invalid index %d!", n))
+		}
+		self.slots[absIndex-1] = val
 	}
-	absIndex := self.absIndex(n)
-	if !self.isValid(absIndex) {
-		panic(fmt.Sprintf("invalid index %d!", n))
-	}
-	self.slots[absIndex-1] = val
 }
 
 // get 从 LuaStack 中读取值
@@ -121,6 +136,15 @@ func (self *luaStack) get(n int) luaValue {
 	if n == api.LUA_REGISTRYINDEX {
 		// 注册表
 		return self.state.registry
+	}
+	if n < api.LUA_REGISTRYINDEX {
+		// Upvalue
+		uvIdx := api.LUA_REGISTRYINDEX - n - 1
+		c := self.closure
+		if c == nil || uvIdx >= len(c.upvals) {
+			return nil
+		}
+		return *(c.upvals[uvIdx].val)
 	}
 	n = self.absIndex(n)
 	if self.isValid(n) {

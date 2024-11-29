@@ -1,6 +1,9 @@
 package state
 
-import "fmt"
+import (
+	"fmt"
+	"go-luacompiler/api"
+)
 
 func (self *luaState) GetTop() int {
 	return self.stack.top
@@ -16,7 +19,10 @@ func (self *luaState) CheckStack(n int) bool {
 }
 
 func (self *luaState) Pop(n int) {
-	self.SetTop(-n - 1)
+	// self.SetTop(-n - 1)
+	for i := 0; i < n; i++ {
+		self.stack.pop()
+	}
 }
 
 func (self *luaState) Copy(from, to int) {
@@ -77,4 +83,8 @@ func (self *luaState) SetTop(index int) {
 			self.stack.push(nil)
 		}
 	}
+}
+
+func (self *luaState) LuaUpvalueIndex(i int) int {
+	return api.LUA_REGISTRYINDEX - i
 }

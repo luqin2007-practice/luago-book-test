@@ -22,10 +22,20 @@ func (self *luaState) PushString(s string) {
 	self.stack.push(s)
 }
 
-func (self *luaState) PushGoFunction(f api.GoFunction) {
-	self.stack.push(newGoClosure(f))
+func (self *luaState) PushGoFunction(f api.GoFunction, n int) {
+	closure := newGoClosure(f, n)
+	for i := n; i > 0; i-- {
+		val := self.stack.pop()
+		closure.upvals[i-1] = &upvalue{&val}
+	}
+	self.stack.push(closure)
 }
 
 func (self *luaState) PushGlobalTable() {
 	self.stack.push(self.registry.get(api.LUA_RIDX_GLOBALS))
+}
+
+func (self *luaState) Register(name string, f api.GoFunction) {
+	self.PushGoFunction(f, 0)
+	self.SetGlobal(name)
 }

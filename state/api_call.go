@@ -8,13 +8,21 @@ import (
 )
 
 func (self *luaState) Load(chunk []byte, chunkName string, mode string) int {
+	var proto *binchunk.Prototype
+	var closure *Closure
 	if "b" == mode {
-		prop := binchunk.Undump(chunk)
-		closure := newLuaClosure(prop)
-		self.stack.push(closure)
+		proto = binchunk.Undump(chunk)
+		closure = newLuaClosure(proto)
 	} else {
 		// TODO 暂时先只实现加载二进制数据
 		panic(fmt.Sprintf("Chunk mode %s not supported!", mode))
+	}
+	self.stack.push(closure)
+
+	// 设置 _ENV
+	if len(proto.Protos) > 0 {
+		env := self.registry.get(api.LUA_RIDX_GLOBALS)
+		closure.upvals[0] = &upvalue{&env}
 	}
 	return 0
 }
@@ -32,25 +40,6 @@ func (self *luaState) Call(nArgs, nResults int) {
 	} else {
 		self.callGoClosure(c, nArgs, nResults)
 	}
-}
-
-func (self *luaState) LoadProto(n int) {
-	proto := self.stack.closure.proto.Protos[n]
-	closure := newLuaClosure(proto)
-	self.stack.push(closure)
-}
-
-func (self *luaState) RegisterCount() int {
-	return int(self.stack.closure.proto.MaxStackSize)
-}
-
-func (self *luaState) LoadVararg(n int) {
-	if n < 0 {
-		n = len(self.stack.varargs)
-	}
-
-	self.stack.check(n)
-	self.stack.pushN(self.stack.varargs, n)
 }
 
 func (self *luaState) callLuaClosure(c *Closure, nArgs, nResults int) {
@@ -100,8 +89,10 @@ func (self *luaState) callGoClosure(c *Closure, nArgs, nResults int) {
 	newStack := newLuaState(nArgs+api.LUA_MINSTACK, self)
 	newStack.closure = c
 
-	args := self.stack.popN(nArgs)
-	newStack.pushN(args, nArgs)
+	if nArgs > 0 {
+		args := self.stack.popN(nArgs)
+		newStack.pushN(args, nArgs)
+	}
 	self.stack.pop()
 
 	self.pushLuaStack(newStack)

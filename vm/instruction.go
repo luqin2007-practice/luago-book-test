@@ -56,7 +56,9 @@ func (self Instruction) Execute(vm api.LuaVM) {
 	action := opcodes[self.Opcode()].action
 	name := opcodes[self.Opcode()].name
 	if action != nil {
+		vm.BeforeInstExecuted(uint32(self))
 		action(self, vm)
+		vm.AfterInstExecuted(uint32(self))
 	} else {
 		panic(fmt.Sprintf("unknown instruction %s!", name))
 	}

@@ -53,8 +53,8 @@ func setTable(i Instruction, vm api.LuaVM) {
 	a, b, c := i.ABC()
 	a += 1
 
-	vm.GetRK(c)
 	vm.GetRK(b)
+	vm.GetRK(c)
 	vm.SetTable(a)
 }
 

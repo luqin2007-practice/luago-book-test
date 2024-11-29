@@ -44,51 +44,11 @@ func PrintCode(f *binchunk.Prototype) {
 		}
 		i := vm.Instruction(c)
 		fmt.Printf("\n\t%d\t[%3s]\t%8s", pc+1, line, i.OpName())
-		PrintInstruction(i)
+		fmt.Printf("\t%s", instValuesString(i))
 	}
 }
 
-// PrintInstruction 打印函数指令
-func PrintInstruction(i vm.Instruction) {
-	fmt.Printf("\t")
-	switch i.OpMode() {
-	case vm.IABC:
-		a, b, c := i.ABC()
-		fmt.Printf("%d", a)
-		if i.BMode() != vm.OpArgN {
-			if b > 0xFF {
-				// 常量表索引时以负数形式输出
-				fmt.Printf("\t%d", -1-b&0xFF)
-			} else {
-				fmt.Printf("\t%d", b)
-			}
-		}
-		if i.CMode() != vm.OpArgN {
-			if c > 0xFF {
-				// 常量表索引时以负数形式输出
-				fmt.Printf("\t%d", -1-c&0xFF)
-			} else {
-				fmt.Printf("\t%d", c)
-			}
-		}
-	case vm.IABx:
-		a, bx := i.ABx()
-		fmt.Printf("%d", a)
-		if i.BMode() == vm.OpArgK {
-			// 常量表索引时以负数形式输出
-			fmt.Printf("\t%d", -1-bx&0xFF)
-		} else if i.BMode() == vm.OpArgU {
-			fmt.Printf("\t%d", bx)
-		}
-	case vm.IAsBx:
-		a, sbx := i.AsBx()
-		fmt.Printf("%d\t%d", a, sbx)
-	case vm.IAx:
-		fmt.Printf("%d", -1-i.Ax())
-	}
-}
-
-// PrintDetail 打印详细信息 本地变量+upvalue
+// PrintDetail 打印详细信息 本地变量 + upvalue
 func PrintDetail(f *binchunk.Prototype) {
 	fmt.Printf("\nconstants (%d):", len(f.Constants))
 	if len(f.Constants) > 0 {
@@ -164,4 +124,52 @@ func PrintStack(ls api.LuaState) string {
 	str := builder.String()
 	fmt.Println(str)
 	return str
+}
+
+func PrintOpcodes(i uint32) string {
+	self := vm.Instruction(i)
+	name := self.OpName()
+	str := fmt.Sprintf("%s %s", name, instValuesString(self))
+	fmt.Println(str)
+	return str
+}
+
+func instValuesString(i vm.Instruction) string {
+	builder := strings.Builder{}
+	switch i.OpMode() {
+	case vm.IABC:
+		a, b, c := i.ABC()
+		builder.WriteString(fmt.Sprintf("%d", a))
+		if i.BMode() != vm.OpArgN {
+			if b > 0xFF {
+				// 常量表索引时以负数形式输出
+				builder.WriteString(fmt.Sprintf("\t%d", -1-b&0xFF))
+			} else {
+				builder.WriteString(fmt.Sprintf("\t%d", b))
+			}
+		}
+		if i.CMode() != vm.OpArgN {
+			if c > 0xFF {
+				// 常量表索引时以负数形式输出
+				builder.WriteString(fmt.Sprintf("\t%d", -1-c&0xFF))
+			} else {
+				builder.WriteString(fmt.Sprintf("\t%d", c))
+			}
+		}
+	case vm.IABx:
+		a, bx := i.ABx()
+		builder.WriteString(fmt.Sprintf("%d", a))
+		if i.BMode() == vm.OpArgK {
+			// 常量表索引时以负数形式输出
+			builder.WriteString(fmt.Sprintf("\t%d", -1-bx&0xFF))
+		} else if i.BMode() == vm.OpArgU {
+			builder.WriteString(fmt.Sprintf("\t%d", bx))
+		}
+	case vm.IAsBx:
+		a, sbx := i.AsBx()
+		builder.WriteString(fmt.Sprintf("%d\t%d", a, sbx))
+	case vm.IAx:
+		builder.WriteString(fmt.Sprintf("%d", -1-i.Ax()))
+	}
+	return builder.String()
 }

@@ -20,4 +20,13 @@ type LuaVM interface {
 	RegisterCount() int
 	// LoadVararg 加载 n 个函数
 	LoadVararg(n int)
+	// CloseUpvalues 关闭 Upvalue
+	CloseUpvalues(a int)
+
+	// OnBeforeInstExecuted 测试钩子 指令执行前
+	OnBeforeInstExecuted(f func(i uint32))
+	BeforeInstExecuted(i uint32)
+	// OnAfterInstExecuted 测试钩子 指令执行后
+	OnAfterInstExecuted(f func(i uint32))
+	AfterInstExecuted(i uint32)
 }

@@ -23,12 +23,12 @@ func move(instruction Instruction, vm api.LuaVM) {
 伪代码：
 
 	PC += sBx
-	TODO A 与 Upvalue 有关
+	close opened upvalues
 */
 func jmp(instruction Instruction, vm api.LuaVM) {
 	a, sbx := instruction.AsBx()
 	vm.AddPC(sbx)
 	if a != 0 {
-		// ...
+		vm.CloseUpvalues(a)
 	}
 }
