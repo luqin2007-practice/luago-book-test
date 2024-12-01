@@ -73,14 +73,7 @@ func (self *luaState) IsGoFunction(index int) bool {
 
 func (self *luaState) ToBoolean(index int) bool {
 	val := self.stack.get(index)
-	switch x := val.(type) {
-	case nil:
-		return false
-	case bool:
-		return x
-	default:
-		return true
-	}
+	return convertToBoolean(val)
 }
 
 func (self *luaState) ToInteger(index int) int64 {

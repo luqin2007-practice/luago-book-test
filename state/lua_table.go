@@ -6,8 +6,9 @@ import (
 )
 
 type luaTable struct {
-	arr  []luaValue
-	_map map[luaValue]luaValue
+	arr       []luaValue
+	_map      map[luaValue]luaValue
+	metatable *luaTable
 }
 
 // newLuaTable 创建 Table
@@ -82,6 +83,10 @@ func (self *luaTable) put(key luaValue, value luaValue) {
 func (self *luaTable) len() int64 {
 	self._shrinkArray()
 	return int64(len(self.arr))
+}
+
+func (self *luaTable) hasMetafield(fieldName string) bool {
+	return self.metatable != nil && self.metatable.get(fieldName) != nil
 }
 
 // _keyToInteger 若 key 为 float64，尝试转换为 int64

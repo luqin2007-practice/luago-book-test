@@ -3,25 +3,26 @@ package state
 import "go-luacompiler/api"
 
 type operator struct {
+	metamethod  string
 	integerFunc func(int64, int64) int64
 	floatFunc   func(float64, float64) float64
 }
 
 var operators = []operator{
-	{iadd, fadd},
-	{isub, fsub},
-	{imul, fmul},
-	{imod, fmod},
-	{nil, pow},
-	{nil, div},
-	{iidiv, fidiv},
-	{band, nil},
-	{bor, nil},
-	{bxor, nil},
-	{shl, nil},
-	{shr, nil},
-	{iunm, funm},
-	{bnot, nil},
+	{"__add", iadd, fadd},
+	{"__sub", isub, fsub},
+	{"__mul", imul, fmul},
+	{"__mod", imod, fmod},
+	{"__pow", nil, pow},
+	{"__div", nil, div},
+	{"__idiv", iidiv, fidiv},
+	{"__band", band, nil},
+	{"__bor", bor, nil},
+	{"__bxor", bxor, nil},
+	{"__shl", shl, nil},
+	{"__shr", shr, nil},
+	{"__unm", iunm, funm},
+	{"__bnot", bnot, nil},
 }
 
 func (self *luaState) Arith(op api.ArithOp) {
@@ -33,16 +34,24 @@ func (self *luaState) Arith(op api.ArithOp) {
 		// 一元运算符
 		a = b
 	}
-
 	operator := operators[op]
-	if result := arith(a, b, operator); result != nil {
+
+	// 普通运算符
+	if result := _arith(a, b, operator); result != nil {
 		self.stack.push(result)
-	} else {
-		panic("arithmetic error!")
+		return
 	}
+
+	// 自定义运算符
+	if result, ok := callMetamethod(a, b, operator.metamethod, self); ok {
+		self.stack.push(result)
+		return
+	}
+
+	panic("arithmetic error!")
 }
 
-func arith(a, b luaValue, op operator) luaValue {
+func _arith(a, b luaValue, op operator) luaValue {
 	if op.floatFunc == nil {
 		// 仅整型运算（位运算）
 		if x, ok := convertToInteger(a); ok {

@@ -30,15 +30,27 @@ func (self *luaState) Load(chunk []byte, chunkName string, mode string) int {
 func (self *luaState) Call(nArgs, nResults int) {
 	val := self.stack.get(-nArgs - 1)
 	c, ok := val.(*Closure)
-	if !ok {
-		panic("not a function or closure!")
-	}
 	//fmt.Printf("call %s<%d,%d>\n", c.proto.Source, c.proto.LineDefined, c.proto.LastLineDefined)
 
-	if c.proto != nil {
-		self.callLuaClosure(c, nArgs, nResults)
+	// 查找元表
+	if !ok {
+		if mf := getMetafield(self, val, "__call"); mf != nil {
+			if c, ok = mf.(*Closure); ok {
+				self.stack.push(val)
+				self.Insert(-(nArgs + 2))
+				nArgs += 1
+			}
+		}
+	}
+
+	if ok {
+		if c.proto != nil {
+			self.callLuaClosure(c, nArgs, nResults)
+		} else {
+			self.callGoClosure(c, nArgs, nResults)
+		}
 	} else {
-		self.callGoClosure(c, nArgs, nResults)
+		panic("not a function or closure!")
 	}
 }
 

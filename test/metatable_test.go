@@ -6,14 +6,15 @@ import (
 	"testing"
 )
 
-func TestGoFunction(t *testing.T) {
-	data, err := os.ReadFile("helloworld.out")
+func TestMetatable(t *testing.T) {
+	data, err := os.ReadFile("metatable.out")
 	if err != nil {
 		panic(err)
 	}
 
 	ls := state.New()
 	bindFunc(ls)
-	ls.Load(data, "chunk", "b")
+	//addMonitor(ls)
+	ls.Load(data, "metatable", "b")
 	ls.Call(0, 0)
 }

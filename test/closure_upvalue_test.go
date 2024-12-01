@@ -104,7 +104,7 @@ func TestClosure(t *testing.T) {
 		PrintStack(ls)
 	})
 
-	ls.Register("print", _print)
+	bindFunc(ls)
 	ls.Load(data, "closure", "b")
 	ls.Call(0, 0)
 }

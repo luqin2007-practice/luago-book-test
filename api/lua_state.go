@@ -153,4 +153,24 @@ type LuaState interface {
 	//   nArgs 实际传入的参数数量
 	//   nResults 实际需要的参数数量
 	Call(nArgs, nResults int)
+
+	/* 元表 */
+
+	// GetMetatable 检查 index 处值是否有元表，若有则入栈，否则不改变栈状态
+	//   返回值：值是否包含元表
+	GetMetatable(index int) bool
+	// SetMetatable 将栈顶 Table 弹出，将其设置为 index 处值的元表
+	SetMetatable(index int)
+	// RawLen 等效 Len，忽略元方法
+	RawLen(index int) uint
+	// RawEqual 等效 Equal，忽略元方法
+	RawEqual(index1, index2 int) bool
+	// RawGet 等效 GetTable，忽略元方法
+	RawGet(index int) LuaType
+	// RawSet 等效 SetTable，忽略元方法
+	RawSet(index int)
+	// RawGetI 等效 GetI，忽略元方法
+	RawGetI(index int, i int64) LuaType
+	// RawSetI 等效 SetI，忽略元方法
+	RawSetI(index int, i int64)
 }
