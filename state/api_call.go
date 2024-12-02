@@ -9,7 +9,7 @@ import (
 
 func (self *luaState) Load(chunk []byte, chunkName string, mode string) int {
 	var proto *binchunk.Prototype
-	var closure *Closure
+	var closure *closure
 	if "b" == mode {
 		proto = binchunk.Undump(chunk)
 		closure = newLuaClosure(proto)
@@ -29,13 +29,13 @@ func (self *luaState) Load(chunk []byte, chunkName string, mode string) int {
 
 func (self *luaState) Call(nArgs, nResults int) {
 	val := self.stack.get(-nArgs - 1)
-	c, ok := val.(*Closure)
+	c, ok := val.(*closure)
 	//fmt.Printf("call %s<%d,%d>\n", c.proto.Source, c.proto.LineDefined, c.proto.LastLineDefined)
 
 	// 查找元表
 	if !ok {
 		if mf := getMetafield(self, val, "__call"); mf != nil {
-			if c, ok = mf.(*Closure); ok {
+			if c, ok = mf.(*closure); ok {
 				self.stack.push(val)
 				self.Insert(-(nArgs + 2))
 				nArgs += 1
@@ -54,7 +54,7 @@ func (self *luaState) Call(nArgs, nResults int) {
 	}
 }
 
-func (self *luaState) callLuaClosure(c *Closure, nArgs, nResults int) {
+func (self *luaState) callLuaClosure(c *closure, nArgs, nResults int) {
 	nRegs := int(c.proto.MaxStackSize) // 函数所需寄存器大小
 	nParams := int(c.proto.NumParams)  // 函数声明参数数量
 	isVararg := c.proto.IsVararg == 1  // 函数是否包含变长参数
@@ -97,7 +97,7 @@ func (self *luaState) runLuaClosure() {
 	}
 }
 
-func (self *luaState) callGoClosure(c *Closure, nArgs, nResults int) {
+func (self *luaState) callGoClosure(c *closure, nArgs, nResults int) {
 	newStack := newLuaState(nArgs+api.LUA_MINSTACK, self)
 	newStack.closure = c
 

@@ -67,7 +67,7 @@ func (self *luaState) IsString(index int) bool {
 }
 
 func (self *luaState) IsGoFunction(index int) bool {
-	c, ok := self.stack.get(index).(*Closure)
+	c, ok := self.stack.get(index).(*closure)
 	return ok && c.goFunc != nil
 }
 
@@ -116,6 +116,6 @@ func (self *luaState) ToStringX(index int) (string, bool) {
 }
 
 func (self *luaState) ToGoFunction(index int) api.GoFunction {
-	c, _ := self.stack.get(index).(*Closure)
+	c, _ := self.stack.get(index).(*closure)
 	return c.goFunc
 }

@@ -9,7 +9,7 @@ type luaStack struct {
 	slots   []luaValue
 	top     int
 	prev    *luaStack
-	closure *Closure
+	closure *closure
 	varargs []luaValue
 	pc      int
 	state   *luaState

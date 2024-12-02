@@ -20,7 +20,7 @@ func typeOf(v interface{}) api.LuaType {
 		return api.LUA_TSTRING
 	case *luaTable:
 		return api.LUA_TTABLE
-	case *Closure:
+	case *closure:
 		return api.LUA_TFUNCTION
 	default:
 		panic(fmt.Sprintf("Unknown type from value %v", v)) // TODO 其他类型暂未实现

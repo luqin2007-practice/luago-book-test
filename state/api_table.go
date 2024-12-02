@@ -122,7 +122,7 @@ func (self *luaState) getTable(table, key luaValue, raw bool) api.LuaType {
 			case *luaTable:
 				// __index 为表时，将行为转发给表
 				return self.getTable(x, key, false)
-			case *Closure:
+			case *closure:
 				// __index 为方法时，调用方法
 				self.stack.push(mf)
 				self.stack.push(table)
@@ -150,7 +150,7 @@ func (self *luaState) setTable(table, key, val luaValue, raw bool) {
 				// __index 为表时，将行为转发给表
 				self.setTable(x, key, val, false)
 				return
-			case *Closure:
+			case *closure:
 				// __index 为方法时，调用方法
 				self.stack.push(mf)
 				self.stack.push(table)
