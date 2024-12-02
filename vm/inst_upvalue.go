@@ -22,7 +22,7 @@ func getUpval(i Instruction, vm api.LuaVM) {
 
 伪代码：
 
-	R(A) := Upvalue[B]
+	Upvalue[B] := R(A)
 */
 func setUpval(i Instruction, vm api.LuaVM) {
 	a, b, _ := i.ABC()
