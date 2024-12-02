@@ -111,6 +111,9 @@ func self(i Instruction, vm api.LuaVM) {
 }
 
 // _pushFuncAndArgs 将函数和参数推入栈顶
+//
+//	函数：R(a)
+//	参数：从 R(a+1) 开始，共 b-1 个
 func _pushFuncAndArgs(a, b int, vm api.LuaVM) int {
 	if b >= 1 {
 		// 函数声明有参数
@@ -126,6 +129,10 @@ func _pushFuncAndArgs(a, b int, vm api.LuaVM) int {
 	}
 }
 
+// _popResults 函数调用完成后，将结果存入指定位置
+//
+//	数量：c-1
+//	位置：R(a) 到 R(a+c-2)
 func _popResults(a, c int, vm api.LuaVM) {
 	if c == 1 {
 		// 无返回

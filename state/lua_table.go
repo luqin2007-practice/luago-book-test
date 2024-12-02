@@ -9,6 +9,7 @@ type luaTable struct {
 	arr       []luaValue
 	_map      map[luaValue]luaValue
 	metatable *luaTable
+	keys      map[luaValue]luaValue
 }
 
 // newLuaTable 创建 Table
@@ -77,6 +78,8 @@ func (self *luaTable) put(key luaValue, value luaValue) {
 			self._map[key] = value
 		}
 	}
+	// 清空键表
+	self.keys = nil
 }
 
 // len 获取表的列表部分长度
@@ -87,6 +90,13 @@ func (self *luaTable) len() int64 {
 
 func (self *luaTable) hasMetafield(fieldName string) bool {
 	return self.metatable != nil && self.metatable.get(fieldName) != nil
+}
+
+func (self *luaTable) nextKey(key luaValue) luaValue {
+	if self.keys == nil {
+		self._initKeys()
+	}
+	return self.keys[key]
 }
 
 // _keyToInteger 若 key 为 float64，尝试转换为 int64
@@ -123,5 +133,23 @@ func (self *luaTable) _shrinkArray() {
 	}
 	if i != len(self.arr) {
 		self.arr = self.arr[:i]
+	}
+}
+
+func (self *luaTable) _initKeys() {
+	self.keys = make(map[luaValue]luaValue)
+	var key luaValue = nil
+	for i, v := range self.arr {
+		if v != nil {
+			self.keys[key] = int64(i + 1)
+			key = int64(i + 1)
+		}
+	}
+
+	for k, v := range self._map {
+		if v != nil {
+			self.keys[key] = k
+			key = k
+		}
 	}
 }

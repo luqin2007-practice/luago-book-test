@@ -142,6 +142,10 @@ type LuaState interface {
 	SetGlobal(name string)
 	// Register 在全局变量表中添加 Go 函数
 	Register(name string, f GoFunction)
+	// Next 迭代用：弹出栈顶元素为当前键，取 index 处的表的下一个键
+	//   若存在下一个键，推入键和值，返回 true
+	//   若不存在下一个键，直接返回 false
+	Next(index int) bool
 
 	/* 函数调用 */
 

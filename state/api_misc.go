@@ -58,3 +58,19 @@ func (self *luaState) RawLen(index int) uint {
 		return 0
 	}
 }
+
+func (self *luaState) Next(index int) bool {
+	table := self.stack.get(index)
+	t, ok := table.(*luaTable)
+	if !ok {
+		panic("table expected!")
+	}
+
+	key := self.stack.pop()
+	if ne := t.nextKey(key); ne != nil {
+		self.stack.push(ne)
+		self.stack.push(t.get(ne))
+		return true
+	}
+	return false
+}
