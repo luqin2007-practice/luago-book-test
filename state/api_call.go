@@ -20,7 +20,7 @@ func (self *luaState) Load(chunk []byte, chunkName string, mode string) int {
 	self.stack.push(closure)
 
 	// 设置 _ENV
-	if len(proto.Protos) > 0 {
+	if len(proto.Upvalues) > 0 {
 		env := self.registry.get(api.LUA_RIDX_GLOBALS)
 		closure.upvals[0] = &upvalue{&env}
 	}
