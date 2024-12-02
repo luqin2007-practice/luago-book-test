@@ -24,7 +24,7 @@ func (self *luaState) Load(chunk []byte, chunkName string, mode string) int {
 		env := self.registry.get(api.LUA_RIDX_GLOBALS)
 		closure.upvals[0] = &upvalue{&env}
 	}
-	return 0
+	return api.LUA_OK
 }
 
 func (self *luaState) Call(nArgs, nResults int) {
@@ -116,4 +116,23 @@ func (self *luaState) callGoClosure(c *closure, nArgs, nResults int) {
 		self.stack.check(len(results))
 		self.stack.pushN(results, nResults)
 	}
+}
+
+func (self *luaState) PCall(nArgs, nResults, msgh int) (status int) {
+	caller := self.stack
+	status = api.LUA_ERRRUN
+
+	defer func() {
+		// 异常捕获，将捕获的异常存入栈顶
+		if err := recover(); err != nil {
+			for self.stack != caller {
+				self.popLuaStack()
+			}
+			self.stack.push(err)
+		}
+	}()
+
+	self.Call(nArgs, nResults)
+	status = api.LUA_OK
+	return
 }

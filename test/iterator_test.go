@@ -13,7 +13,6 @@ func TestIterator(t *testing.T) {
 	}
 
 	ls := state.New()
-	bindFunc(ls)
 	//addMonitor(ls)
 	ls.Load(data, "iterator", "b")
 	ls.Call(0, 0)

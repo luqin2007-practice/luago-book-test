@@ -6,13 +6,13 @@ import (
 	"testing"
 )
 
-func TestGoFunction(t *testing.T) {
-	data, err := os.ReadFile("helloworld.out")
+func TestError(t *testing.T) {
+	data, err := os.ReadFile("error.out")
 	if err != nil {
 		panic(err)
 	}
 
 	ls := state.New()
-	ls.Load(data, "chunk", "b")
+	ls.Load(data, "error", "b")
 	ls.Call(0, 0)
 }

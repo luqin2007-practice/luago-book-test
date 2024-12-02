@@ -74,3 +74,8 @@ func (self *luaState) Next(index int) bool {
 	}
 	return false
 }
+
+func (self *luaState) Error() int {
+	err := self.stack.pop()
+	panic(err)
+}

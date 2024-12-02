@@ -13,7 +13,6 @@ func TestMetatable(t *testing.T) {
 	}
 
 	ls := state.New()
-	bindFunc(ls)
 	//addMonitor(ls)
 	ls.Load(data, "metatable", "b")
 	ls.Call(0, 0)

@@ -1,21 +1,27 @@
-package test
+package api
 
 import (
 	"fmt"
-	"go-luacompiler/api"
 )
 
-func bindFunc(ls api.LuaState) {
-	ls.Register("print", _print)
-	ls.Register("getmetatable", _getmetatable)
-	ls.Register("setmetatable", _setmetatable)
-	ls.Register("next", _next)
-	ls.Register("ipairs", _ipairs)
-	ls.Register("pairs", _pairs)
+type api_function struct {
+	Name     string
+	Function func(LuaState) int
+}
+
+var ApiFunctions = []api_function{
+	{"print", _print},
+	{"getmetatable", _getmetatable},
+	{"setmetatable", _setmetatable},
+	{"next", _next},
+	{"ipairs", _ipairs},
+	{"pairs", _pairs},
+	{"error", _error},
+	{"pcall", _pCall},
 }
 
 // _print 实现替代 Lua 的 print 函数
-func _print(ls api.LuaState) int {
+func _print(ls LuaState) int {
 	nArgs := ls.GetTop()
 	for i := 1; i <= nArgs; i++ {
 		if ls.IsBoolean(i) {
@@ -33,19 +39,19 @@ func _print(ls api.LuaState) int {
 	return 0
 }
 
-func _getmetatable(ls api.LuaState) int {
+func _getmetatable(ls LuaState) int {
 	if !ls.GetMetatable(1) {
 		ls.PushNil()
 	}
 	return 1
 }
 
-func _setmetatable(ls api.LuaState) int {
+func _setmetatable(ls LuaState) int {
 	ls.SetMetatable(1)
 	return 1
 }
 
-func _next(ls api.LuaState) int {
+func _next(ls LuaState) int {
 	ls.SetTop(2) // 两个参数
 	if ls.Next(1) {
 		return 2
@@ -62,7 +68,7 @@ function pairs(t)
 
 end
 */
-func _pairs(ls api.LuaState) int {
+func _pairs(ls LuaState) int {
 	ls.PushGoFunction(_next, 0)
 	ls.PushValue(1)
 	ls.PushNil()
@@ -76,7 +82,7 @@ function ipairs(t)
 
 end
 */
-func _ipairs(ls api.LuaState) int {
+func _ipairs(ls LuaState) int {
 	ls.PushGoFunction(_iPairsAux, 0)
 	ls.PushValue(1)
 	ls.PushInteger(0)
@@ -95,12 +101,24 @@ function _iPairsAux(t, i)
 
 end
 */
-func _iPairsAux(ls api.LuaState) int {
+func _iPairsAux(ls LuaState) int {
 	i := ls.ToInteger(2) + 1
 	ls.PushInteger(i)
-	if ls.GetI(1, i) == api.LUA_TNIL {
+	if ls.GetI(1, i) == LUA_TNIL {
 		return 1
 	} else {
 		return 2
 	}
+}
+
+func _error(ls LuaState) int {
+	return ls.Error()
+}
+
+func _pCall(ls LuaState) int {
+	nArgs := ls.GetTop() - 1
+	status := ls.PCall(nArgs, -1, 0)
+	ls.PushBoolean(status == LUA_OK)
+	ls.Insert(1)
+	return ls.GetTop()
 }

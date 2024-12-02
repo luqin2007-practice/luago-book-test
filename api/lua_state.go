@@ -142,10 +142,6 @@ type LuaState interface {
 	SetGlobal(name string)
 	// Register 在全局变量表中添加 Go 函数
 	Register(name string, f GoFunction)
-	// Next 迭代用：弹出栈顶元素为当前键，取 index 处的表的下一个键
-	//   若存在下一个键，推入键和值，返回 true
-	//   若不存在下一个键，直接返回 false
-	Next(index int) bool
 
 	/* 函数调用 */
 
@@ -157,6 +153,8 @@ type LuaState interface {
 	//   nArgs 实际传入的参数数量
 	//   nResults 实际需要的参数数量
 	Call(nArgs, nResults int)
+	// PCall 类似 Call，但有异常时将异常留在栈顶，返回错误码
+	PCall(nArgs, nResults, msgh int) int
 
 	/* 元表 */
 
@@ -177,4 +175,13 @@ type LuaState interface {
 	RawGetI(index int, i int64) LuaType
 	// RawSetI 等效 SetI，忽略元方法
 	RawSetI(index int, i int64)
+
+	/* 其他 */
+
+	// Next 迭代用：弹出栈顶元素为当前键，取 index 处的表的下一个键
+	//   若存在下一个键，推入键和值，返回 true
+	//   若不存在下一个键，直接返回 false
+	Next(index int) bool
+	// Error 将栈顶的值作为异常抛出，并返回错误码
+	Error() int
 }

@@ -41,8 +41,18 @@ const (
 
 // 注册表
 const LUA_MINSTACK = 20
-
-// 注册表
 const LUAI_MAXSTACK = 1_000_000
 const LUA_REGISTRYINDEX = -LUAI_MAXSTACK - 1000
 const LUA_RIDX_GLOBALS int64 = 2
+
+// 错误码
+const (
+	LUA_OK = iota
+	LUA_YIELD
+	LUA_ERRRUN
+	LUA_ERRSYNTAX
+	LUA_ERRMEM
+	LUA_ERRGCMM
+	LUA_ERRERR
+	LUA_ERRFILE
+)
