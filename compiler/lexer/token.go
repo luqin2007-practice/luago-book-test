@@ -92,3 +92,21 @@ var keywords = map[string]int{
 	"until":    TOKEN_KW_UNTIL,
 	"while":    TOKEN_KW_WHILE,
 }
+
+func IsReturnOrBlockEndToken(kind int) bool {
+	return kind == TOKEN_KW_RETURN ||
+		kind == TOKEN_EOF ||
+		kind == TOKEN_KW_END ||
+		kind == TOKEN_KW_ELSE ||
+		kind == TOKEN_KW_ELSEIF ||
+		kind == TOKEN_KW_UNTIL
+}
+
+// IsBlockEndToken: TOKEN_EOF, TOKEN_KW_END, TOKEN_KW_ELSE, TOKEN_KW_ELSEIF, TOKEN_KW_UNTIL
+func IsBlockEndToken(kind int) bool {
+	return kind == TOKEN_EOF ||
+		kind == TOKEN_KW_END ||
+		kind == TOKEN_KW_ELSE ||
+		kind == TOKEN_KW_ELSEIF ||
+		kind == TOKEN_KW_UNTIL
+}

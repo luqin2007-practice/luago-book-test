@@ -43,6 +43,10 @@ func NewLexer(chunk, chunkName string) *Lexer {
 	}
 }
 
+func (self *Lexer) Line() int {
+	return self.line
+}
+
 /*
 NextToken 获取下一个 Token
 
@@ -173,19 +177,37 @@ func (self *Lexer) NextToken() (line, kind int, token string) {
 	return
 }
 
-// LookAhead 查看下一个 Token
-func (self *Lexer) LookAhead() (line, kind int, token string) {
+// NextTokenOfKind 获取下一个 Token，并确保其类型
+func (self *Lexer) NextTokenOfKind(kind int) (line int, token string) {
+	line, _kind, token := self.NextToken()
+	if kind != _kind {
+		self.error("syntax error near '%s'", token)
+	}
+	return line, token
+}
+
+func (self *Lexer) NextKeyword(kind int) int {
+	line, _ := self.NextTokenOfKind(kind)
+	return line
+}
+
+func (self *Lexer) NextIdentifier() (line int, token string) {
+	return self.NextTokenOfKind(TOKEN_IDENTIFIER)
+}
+
+// LookAhead 查看下一个 Token 类型
+func (self *Lexer) LookAhead() int {
 	if len(self.nextToken) > 0 {
-		return self.line, self.nextKind, self.nextToken
+		return self.nextKind
 	}
 
 	currentLine := self.line
-	line, kind, token = self.NextToken()
+	line, kind, token := self.NextToken()
 	self.line = currentLine
 	self.nextToken = token
 	self.nextKind = kind
 	self.nextLine = line
-	return
+	return kind
 }
 
 // skipWhiteSpace 跳过空白字符和注释
