@@ -29,7 +29,7 @@ const (
 	OP_MOD
 	OP_POW
 	OP_DIV
-	OP_IDIVl
+	OP_IDIV
 	OP_BAND
 	OP_BOR
 	OP_BXOR

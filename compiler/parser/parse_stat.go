@@ -103,9 +103,9 @@ func parseIfStat(lexer *Lexer) *ast.IfStat {
 }
 
 func parseForStat(lexer *Lexer) ast.Stat {
-	forLine, _, _ := lexer.NextToken() // 'for'
-	_, name := lexer.NextIdentifier()  // Name
-	if lexer.LookAhead() == TOKEN_OP_ASSIGN {
+	forLine, _, _ := lexer.NextToken()        // 'for'
+	_, name := lexer.NextIdentifier()         // Name
+	if lexer.LookAhead() == TOKEN_OP_ASSIGN { // =
 		return parseForNumStat(lexer, forLine, name)
 	} else {
 		return parseForInStat(lexer, name)
@@ -113,9 +113,9 @@ func parseForStat(lexer *Lexer) ast.Stat {
 }
 
 func parseFuncDefStat(lexer *Lexer) *ast.AssignStat {
-	lexer.NextToken()                          // 'function'
-	nameList, hasColon := parseFuncName(lexer) // funcname
-	funcDefExp := parseFuncDefExp(lexer)       // funcbody
+	lexer.NextToken()                                // 'function'
+	nameList, hasColon, line := parseFuncName(lexer) // funcname
+	funcDefExp := parseFuncDefExp(lexer, line)       // funcbody
 
 	// 解语法糖 a:b(...) -> a.b(self, ...)
 	if hasColon {
@@ -142,15 +142,6 @@ func parseLocalAssignOrFuncDefStat(lexer *Lexer) ast.Stat {
 	}
 }
 
-/*
-prefixexp ::= var | functioncall | '(' exp ')'
-
-functioncall ::= prefixexp args | prefixexp ':' Name args
-
-varlist '=' explist
-varlist ::= var {',' var}
-var ::= Name | prefixexp '[' exp ']' | prefixexp '.' Name
-*/
 func parseAssignOrFuncCallStat(lexer *Lexer) ast.Stat {
 	prefixExp := parsePrefixExp(lexer)
 	if fc, ok := prefixExp.(*ast.FuncCallExp); ok {

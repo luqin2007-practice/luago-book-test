@@ -160,12 +160,12 @@ func (self *Lexer) NextToken() (line, kind int, token string) {
 	// 数字
 	c := self.chunk[0]
 	if c == '.' || isDigit(c) {
-		return self.line, TOKEN_NUMBER, self.scanNumber()
+		return self.line, TOKEN_NUMBER, self._scan(reNumber)
 	}
 
 	// 关键字、标识符
 	if c == '_' || isLetter(c) {
-		token := self.scanIdentifier()
+		token := self._scan(reIdentifier)
 		if kind, found := keywords[token]; found {
 			return self.line, kind, token
 		} else {
@@ -304,14 +304,6 @@ func (self *Lexer) scanShortString() string {
 
 	self.error("Unfinished string!")
 	return ""
-}
-
-func (self *Lexer) scanNumber() string {
-	return self._scan(reNumber)
-}
-
-func (self *Lexer) scanIdentifier() string {
-	return self._scan(reIdentifier)
 }
 
 func isNewLine(ch byte) bool {
