@@ -1,5 +1,11 @@
 package codegen
 
+import (
+	"fmt"
+	"go-luacompiler/compiler/ast"
+	"go-luacompiler/vm"
+)
+
 type funcInfo struct {
 	// 常量表: map[常量]索引
 	constants map[interface{}]int
@@ -10,61 +16,39 @@ type funcInfo struct {
 	scopeLv  int
 	locVars  []*locVarInfo
 	locNames map[string]*locVarInfo
-	// break
+	// break 位置表
 	breaks [][]int
+	// Upvalue 表
+	parent   *funcInfo
+	upvalues map[string]upvalInfo
+	// 字节码
+	insts []uint32
+	// 子函数
+	subFuncs  []*funcInfo
+	numParams int
+	isVararg  bool
 }
 
-type locVarInfo struct {
-	prev     *locVarInfo // 所有同名变量在一个链表上
-	name     string
-	scopeLv  int
-	slot     int
-	captured bool
-}
-
-// indexOfConstant 在常量表中查找索引，若不存在则存入常量表
-func (self *funcInfo) indexOfConstant(constVal interface{}) int {
-	if index, ok := self.constants[constVal]; ok {
-		return index
+func newFuncInfo(parent *funcInfo, fd *ast.FuncDefExp) *funcInfo {
+	return &funcInfo{
+		constants: map[interface{}]int{},
+		locVars:   make([]*locVarInfo, 0, 8),
+		locNames:  map[string]*locVarInfo{},
+		breaks:    make([][]int, 1),
+		parent:    parent,
+		upvalues:  map[string]upvalInfo{},
+		insts:     make([]uint32, 0, 8),
+		subFuncs:  []*funcInfo{},
+		numParams: len(fd.ParList),
+		isVararg:  fd.IsVararg,
 	}
-
-	index := len(self.constants)
-	self.constants[constVal] = index
-	return index
-}
-
-// allocReg 分配一个寄存器，返回寄存器索引
-func (self *funcInfo) allocReg() int {
-	return self.allocRegs(1)
-}
-
-// allocReg 分配多个寄存器，返回第一个寄存器的索引
-func (self *funcInfo) allocRegs(n int) int {
-	self.usedRegs += n
-	if self.usedRegs >= 255 {
-		panic("function or expression needs too many registers")
-	}
-	if self.usedRegs > self.maxRegs {
-		self.maxRegs = self.usedRegs
-	}
-	return self.usedRegs - n
-}
-
-// freeReg 回收上一个分配的寄存器
-func (self *funcInfo) freeReg() {
-	self.usedRegs--
-}
-
-// freeReg 回收最近分配的多个寄存器
-func (self *funcInfo) freeRegs(n int) {
-	self.usedRegs -= n
 }
 
 // enterScope 进入一个作用域 scope
 func (self *funcInfo) enterScope(breakable bool) {
 	self.scopeLv++
 
-	// 处理循环块
+	// 记录最近循环块中的 break 位置
 	if breakable {
 		self.breaks = append(self.breaks, []int{})
 	} else {
@@ -72,34 +56,19 @@ func (self *funcInfo) enterScope(breakable bool) {
 	}
 }
 
-// addLocVar 向该作用域添加一个局部变量，返回分配的寄存器索引
-func (self *funcInfo) addLocVar(name string) int {
-	newVar := &locVarInfo{
-		name:    name,
-		prev:    self.locNames[name],
-		scopeLv: self.scopeLv,
-		slot:    self.allocReg(),
-	}
-	self.locVars = append(self.locVars, newVar)
-	self.locNames[name] = newVar
-	return newVar.slot
-}
-
-// slotOfLocVar 获取局部变量绑定的寄存器，未绑定返回 -1
-func (self *funcInfo) slotOfLocVar(name string) int {
-	if locVar, ok := self.locNames[name]; ok {
-		return locVar.slot
-	}
-	return -1
-}
-
 // exitScope 离开作用域
 func (self *funcInfo) exitScope() {
-	// 处理循环块
+	// 修复跳转指令
 	pendingBreakJmps := self.breaks[len(self.breaks)-1]
-	self.breaks := self.breaks[:len(self.breaks)-1]
-	// TODO Here
+	self.breaks = self.breaks[:len(self.breaks)-1]
+	a := self.getJmpArgA()
+	for _, pc := range pendingBreakJmps {
+		sBx := self.pc() - pc
+		i := (sBx+vm.MAXARG_sBx)<<14 | a<<6 | vm.OP_JMP
+		self.insts[pc] = uint32(i)
+	}
 
+	// 清除局部变量
 	self.scopeLv--
 	for _, locVar := range self.locNames {
 		if locVar.scopeLv > self.scopeLv {
@@ -108,18 +77,33 @@ func (self *funcInfo) exitScope() {
 	}
 }
 
-// removeLocVar 移除作用域变量
-func (self *funcInfo) removeLocVar(locVar *locVarInfo) {
-	self.freeReg()
-	if locVar.prev == nil {
-		// 没有变量覆盖 - 直接删除
-		delete(self.locNames, locVar.name)
-	} else if locVar.prev.scopeLv == locVar.scopeLv {
-		// 覆盖的变量与当前变量作用域相同 - 删除覆盖的变量
-		self.removeLocVar(locVar.prev)
+// closeOpenUpvals 闭合 Upvalue，实际是跳转到第一个被捕获变量
+func (self *funcInfo) closeOpenUpvals() {
+	a := self.getJmpArgA()
+	if a > 0 {
+		self.emitJmp(a, 0)
+	}
+}
+
+func (self *funcInfo) getJmpArgA() int {
+	hasCapturedLocVars := false
+	minSlotOfLocVars := self.maxRegs
+	for _, locVar := range self.locNames {
+		if locVar.scopeLv == self.scopeLv {
+			for v := locVar; v != nil && v.scopeLv == self.scopeLv; v = v.prev {
+				if v.captured {
+					hasCapturedLocVars = true
+				}
+				if v.slot < minSlotOfLocVars && v.name[0] != '(' {
+					minSlotOfLocVars = v.slot
+				}
+			}
+		}
+	}
+	if hasCapturedLocVars {
+		return minSlotOfLocVars + 1
 	} else {
-		// 使用被覆盖的变量
-		self.locNames[locVar.name] = locVar.prev
+		return 0
 	}
 }
 
@@ -131,4 +115,13 @@ func (self *funcInfo) addBreakJmp(pc int) {
 			return
 		}
 	}
+	panic(fmt.Sprintf("<break> at line %d not inside a loop!", pc))
+}
+
+// fixSbx 将正确的 break 位置写入指令
+func (self *funcInfo) fixSbx(pc, sBx int) {
+	i := self.insts[pc]
+	i = i << 18 >> 18                     // clear sBx
+	i = i | uint32(sBx+vm.MAXARG_sBx)<<14 // reset sBx
+	self.insts[pc] = i
 }
