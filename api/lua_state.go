@@ -63,6 +63,8 @@ type BasicAPI interface {
 	IsString(index int) bool
 	// IsGoFunction 判断给定 index 是否为 Go 函数
 	IsGoFunction(index int) bool
+	// IsFunction 判断给定 index 是否为函数
+	IsFunction(index int) bool
 	// ToBoolean 将给定 index 值转换为布尔值
 	ToBoolean(index int) bool
 	// ToInteger 将给定 index 值转换为整型

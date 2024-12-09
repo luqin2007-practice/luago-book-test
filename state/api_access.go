@@ -71,6 +71,10 @@ func (self *luaState) IsGoFunction(index int) bool {
 	return ok && c.goFunc != nil
 }
 
+func (self *luaState) IsFunction(index int) bool {
+	return self.Type(index) == api.LUA_TFUNCTION
+}
+
 func (self *luaState) ToBoolean(index int) bool {
 	val := self.stack.get(index)
 	return convertToBoolean(val)

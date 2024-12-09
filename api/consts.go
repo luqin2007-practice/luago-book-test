@@ -57,4 +57,10 @@ const (
 	LUA_ERRFILE
 )
 
+// 整形大小范围
+const (
+	LUA_MAXINTEGER = 1<<63 - 1
+	LUA_MININTEGER = -1 << 63
+)
+
 const LUA_MULTRET = -1
