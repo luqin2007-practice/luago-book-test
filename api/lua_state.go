@@ -8,6 +8,11 @@ type CompareOp = int
 type GoFunction func(state LuaState) int
 
 type LuaState interface {
+	BasicAPI
+	AuxLib
+}
+
+type BasicAPI interface {
 
 	/* 基础栈操作 */
 
@@ -74,6 +79,8 @@ type LuaState interface {
 	ToStringX(index int) (string, bool)
 	// ToGoFunction 将给定 index 值转换为 Go 函数，返回转换是否成功
 	ToGoFunction(index int) GoFunction
+	// ToPointer ?
+	ToPointer(idx int) interface{}
 
 	/* 入栈函数 */
 
@@ -91,6 +98,8 @@ type LuaState interface {
 	PushGoFunction(f GoFunction, n int)
 	// PushGlobalTable 将全局变量表推入栈顶
 	PushGlobalTable()
+	// PushFString <=> fmt.Sprintf
+	PushFString(fmt string, a ...interface{})
 
 	/* 运算函数 */
 
@@ -184,4 +193,6 @@ type LuaState interface {
 	Next(index int) bool
 	// Error 将栈顶的值作为异常抛出，并返回错误码
 	Error() int
+	// StringToNumber 将字符串转换为数字并推入栈顶
+	StringToNumber(s string) bool
 }

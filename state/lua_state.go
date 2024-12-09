@@ -14,11 +14,6 @@ func New() *luaState {
 
 	ls := &luaState{registry: registry}
 	ls.pushLuaStack(newLuaState(api.LUA_MINSTACK, ls))
-
-	// 绑定 API 函数
-	for _, f := range api.ApiFunctions {
-		ls.Register(f.Name, f.Function)
-	}
 	return ls
 }
 

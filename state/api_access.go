@@ -119,3 +119,7 @@ func (self *luaState) ToGoFunction(index int) api.GoFunction {
 	c, _ := self.stack.get(index).(*closure)
 	return c.goFunc
 }
+
+func (self *luaState) ToPointer(idx int) interface{} {
+	return self.stack.get(idx)
+}

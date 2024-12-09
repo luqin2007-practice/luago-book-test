@@ -1,6 +1,9 @@
 package state
 
-import "go-luacompiler/api"
+import (
+	fmt2 "fmt"
+	"go-luacompiler/api"
+)
 
 func (self *luaState) PushNil() {
 	self.stack.push(nil)
@@ -20,6 +23,10 @@ func (self *luaState) PushNumber(n float64) {
 
 func (self *luaState) PushString(s string) {
 	self.stack.push(s)
+}
+
+func (self *luaState) PushFString(fmt string, a ...interface{}) {
+	self.PushString(fmt2.Sprintf(fmt, a...))
 }
 
 func (self *luaState) PushGoFunction(f api.GoFunction, n int) {

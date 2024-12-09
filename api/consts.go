@@ -56,3 +56,5 @@ const (
 	LUA_ERRERR
 	LUA_ERRFILE
 )
+
+const LUA_MULTRET = -1
