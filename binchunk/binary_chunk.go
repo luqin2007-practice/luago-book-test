@@ -23,19 +23,19 @@ type Prototype struct {
 	MaxStackSize    byte
 	Code            []uint32
 	Constants       []interface{}
-	Upvalues        []upvalue
+	Upvalues        []Upvalue
 	Protos          []*Prototype
 	LineInfo        []uint32
-	LocVars         []locVar
+	LocVars         []LocVar
 	UpvalueNames    []string
 } // 函数原型
 
-type upvalue struct {
+type Upvalue struct {
 	Instack byte
 	Idx     byte
-} // upvalue 表
+} // Upvalue 表
 
-type locVar struct {
+type LocVar struct {
 	VarName string
 	StartPC uint32
 	EndPC   uint32
@@ -72,4 +72,8 @@ func Undump(data []byte) *Prototype {
 	reader.readByte() // skip upvalue
 	body := reader.readProto("")
 	return body
+}
+
+func IsBinaryChunk(data []byte) bool {
+	return len(data) > 4 && string(data[:4]) == LUA_SIGNATURE
 }

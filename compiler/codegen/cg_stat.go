@@ -53,8 +53,7 @@ func cgWhileStat(fi *funcInfo, stat *WhileStat) {
 	pcBeforeWhile := fi.pc()
 
 	// 条件判断
-	r := fi.allocReg()
-	cgExp(fi, stat.Exp, r, 1)
+	r := pushExp(fi, stat.Exp)
 	fi.freeReg()
 	fi.emitTest(r, 0)
 	pcJmpToEnd := fi.emitJmp(0, 0)
@@ -76,8 +75,7 @@ func cgRepeatStat(fi *funcInfo, stat *RepeatStat) {
 	cgBlock(fi, stat.Block)
 
 	// 条件判断
-	r := fi.allocReg()
-	cgExp(fi, stat.Exp, r, 1)
+	r := pushExp(fi, stat.Exp)
 	fi.freeReg()
 	fi.emitTest(r, 0)
 	fi.emitJmp(fi.getJmpArgA(), pcBeforeRepeat-fi.pc()-1)
@@ -95,8 +93,7 @@ func cgIfStat(fi *funcInfo, stat *IfStat) {
 		}
 
 		// if (...)
-		r := fi.allocReg()
-		cgExp(fi, exp, r, 1)
+		r := pushExp(fi, exp)
 		fi.emitTest(r, 0)
 		pcJmpToNext = fi.emitJmp(0, 0)
 
@@ -178,10 +175,8 @@ func cgAssignStat(fi *funcInfo, stat *AssignStat) {
 	// 处理左侧 t[k] 类型键，对右侧表达式求值
 	for i, exp := range stat.ExpList {
 		if taExp, ok := exp.(*TableAccessExp); ok {
-			tRegs[i] = fi.allocReg()
-			cgExp(fi, taExp.PrefixExp, tRegs[i], 1)
-			kRegs[i] = fi.allocReg()
-			cgExp(fi, taExp.KeyExp, kRegs[i], 1)
+			tRegs[i] = pushExp(fi, taExp.PrefixExp)
+			kRegs[i] = pushExp(fi, taExp.KeyExp)
 		}
 	}
 
@@ -253,8 +248,7 @@ func cgLocalVarDeclStat(fi *funcInfo, stat *LocalVarDeclStat) {
 	if nExps == nNames {
 		// 表达式数量与变量名数量相等
 		for _, exp := range stat.ExpList {
-			a := fi.allocReg()
-			cgExp(fi, exp, a, 1)
+			pushExp(fi, exp)
 		}
 	} else if nExps > nNames {
 		// 表达式数量大于变量名

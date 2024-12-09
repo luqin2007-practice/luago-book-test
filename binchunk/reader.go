@@ -196,15 +196,15 @@ func (self *reader) readConstant() interface{} {
 	}
 }
 
-func (self *reader) readUpvalue() upvalue {
-	return upvalue{
+func (self *reader) readUpvalue() Upvalue {
+	return Upvalue{
 		Instack: self.readByte(),
 		Idx:     self.readByte(),
 	}
 }
 
-func (self *reader) readLocVar() locVar {
-	return locVar{
+func (self *reader) readLocVar() LocVar {
+	return LocVar{
 		VarName: self.readString(),
 		StartPC: self.readUint32(),
 		EndPC:   self.readUint32(),

@@ -1,22 +1,23 @@
 package state
 
 import (
-	"fmt"
 	"go-luacompiler/api"
 	"go-luacompiler/binchunk"
+	"go-luacompiler/compiler/codegen"
+	"go-luacompiler/compiler/parser"
 	"go-luacompiler/vm"
 )
 
 func (self *luaState) Load(chunk []byte, chunkName string, mode string) int {
 	var proto *binchunk.Prototype
 	var closure *closure
-	if "b" == mode {
+	if "b" == mode || binchunk.IsBinaryChunk(chunk) {
 		proto = binchunk.Undump(chunk)
-		closure = newLuaClosure(proto)
 	} else {
-		// TODO 暂时先只实现加载二进制数据
-		panic(fmt.Sprintf("Chunk mode %s not supported!", mode))
+		block := parser.Parse(string(chunk), chunkName)
+		proto = codegen.GenProto(block)
 	}
+	closure = newLuaClosure(proto)
 	self.stack.push(closure)
 
 	// 设置 _ENV
